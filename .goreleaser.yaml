@@ -1,0 +1,20 @@
+version: 2
+
+builds:
+  - binary: gw-archive
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -X github.com/nicksenap/gw-archive/cmd.Version={{ .Version }}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "gw-archive_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
