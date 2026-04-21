@@ -87,7 +87,15 @@ func runRevive(cmd *cobra.Command, args []string) {
 	expectedApplies := 0
 	hadFailures := false
 	for _, repo := range a.Repos {
-		if !repo.HasChanges || repo.StashRef == "" {
+		if !repo.HasChanges {
+			continue
+		}
+		// HasChanges=true with no ref means the save succeeded partially — stash
+		// was created but SaveRef failed. Data is lost; flag it so --and-remove
+		// doesn't compound the loss by deleting the JSONL record.
+		if repo.StashRef == "" {
+			fmt.Fprintf(os.Stderr, "warn: %s: HasChanges=true but no stash ref (archive corrupt, data was lost at save time)\n", repo.RepoName)
+			hadFailures = true
 			continue
 		}
 		expectedApplies++
