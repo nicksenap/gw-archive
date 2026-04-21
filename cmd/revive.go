@@ -82,7 +82,9 @@ func runRevive(cmd *cobra.Command, args []string) {
 		wtPaths[r.RepoName] = r.WorktreePath
 	}
 
-	// Apply stashed changes
+	// Apply stashed changes. expectedApplies counts every repo the archive
+	// claimed had changes — so the summary "X/Y" denominator reflects user intent,
+	// not only attempts we were able to make.
 	appliedCount := 0
 	expectedApplies := 0
 	hadFailures := false
@@ -90,15 +92,16 @@ func runRevive(cmd *cobra.Command, args []string) {
 		if !repo.HasChanges {
 			continue
 		}
-		// HasChanges=true with no ref means the save succeeded partially — stash
-		// was created but SaveRef failed. Data is lost; flag it so --and-remove
-		// doesn't compound the loss by deleting the JSONL record.
+		expectedApplies++
+
+		// HasChanges=true with no ref: stash commit never reached a persistent ref
+		// (SaveRef failed at save time, manual edit, or schema change). Flag it so
+		// --and-remove doesn't compound the loss by deleting the JSONL record.
 		if repo.StashRef == "" {
-			fmt.Fprintf(os.Stderr, "warn: %s: HasChanges=true but no stash ref (archive corrupt, data was lost at save time)\n", repo.RepoName)
+			fmt.Fprintf(os.Stderr, "warn: %s: HasChanges=true but StashRef is empty — changes cannot be restored\n", repo.RepoName)
 			hadFailures = true
 			continue
 		}
-		expectedApplies++
 
 		wtPath, ok := wtPaths[repo.RepoName]
 		if !ok {
