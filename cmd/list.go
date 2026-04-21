@@ -26,8 +26,7 @@ func init() {
 func runList(cmd *cobra.Command, args []string) {
 	archives, err := archive.LoadAll()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+		exitError("%s", err)
 	}
 	if len(archives) == 0 {
 		fmt.Println("No archives")

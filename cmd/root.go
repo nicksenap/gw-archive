@@ -21,6 +21,12 @@ func Execute() {
 	}
 }
 
+// exitError prints an error message to stderr and exits 1.
+func exitError(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, "error: "+format+"\n", args...)
+	os.Exit(1)
+}
+
 func init() {
 	rootCmd.AddCommand(saveCmd, listCmd, showCmd, reviveCmd, removeCmd, pruneCmd)
 	rootCmd.Version = Version

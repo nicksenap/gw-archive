@@ -90,12 +90,24 @@ func ResolveRef(sourceRepo, wsName, repoName string) (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
+// CommitExists returns true if the given SHA is reachable in the source repo.
+// Use this before revive to detect stash commits that were GC'd or manually deleted.
+func CommitExists(sourceRepo, sha string) bool {
+	if sha == "" {
+		return false
+	}
+	_, err := runGit(sourceRepo, "cat-file", "-e", sha)
+	return err == nil
+}
+
 func runGit(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return string(out), fmt.Errorf("git %s: %s", strings.Join(args, " "), strings.TrimSpace(string(out)))
+		// Do not return captured output as the first value on error — it's stderr,
+		// and callers (e.g. ls-files) would treat stderr as a valid result.
+		return "", fmt.Errorf("git %s: %s", strings.Join(args, " "), strings.TrimSpace(string(out)))
 	}
 	return string(out), nil
 }

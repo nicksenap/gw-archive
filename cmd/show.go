@@ -2,28 +2,26 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/nicksenap/gw-archive/internal/archive"
 	"github.com/spf13/cobra"
 )
 
 var showCmd = &cobra.Command{
-	Use:   "show <id>",
-	Short: "Show archive details",
-	Args:  cobra.ExactArgs(1),
-	Run:   runShow,
+	Use:               "show <id>",
+	Short:             "Show archive details",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeArchiveIDs,
+	Run:               runShow,
 }
 
 func runShow(cmd *cobra.Command, args []string) {
 	a, err := archive.Find(args[0])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+		exitError("%s", err)
 	}
 	if a == nil {
-		fmt.Fprintf(os.Stderr, "error: archive %q not found\n", args[0])
-		os.Exit(1)
+		exitError("archive %q not found", args[0])
 	}
 
 	fmt.Printf("ID:         %s\n", a.ID)

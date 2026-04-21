@@ -109,6 +109,30 @@ func TestRemove(t *testing.T) {
 	}
 }
 
+func TestDeleteArchive(t *testing.T) {
+	setupTestStore(t)
+
+	// Populate store with two archives.
+	a := Archive{ID: "del-me", Name: "del-me", Branch: "main",
+		Repos: []ArchivedRepo{{RepoName: "backend", SourceRepo: "/repos/none", StashRef: "abc123"}},
+	}
+	Append(a)
+	Append(Archive{ID: "keeper", Name: "keeper", Branch: "main"})
+
+	// SourceRepo doesn't exist; DeleteRef is best-effort, so DeleteArchive must still remove the JSONL entry.
+	if err := DeleteArchive(&a); err != nil {
+		t.Fatalf("DeleteArchive: %v", err)
+	}
+
+	all, _ := LoadAll()
+	if len(all) != 1 {
+		t.Fatalf("expected 1 archive after DeleteArchive, got %d", len(all))
+	}
+	if all[0].ID != "keeper" {
+		t.Errorf("remaining archive ID = %q, want %q", all[0].ID, "keeper")
+	}
+}
+
 func TestLoadAllEmpty(t *testing.T) {
 	setupTestStore(t)
 

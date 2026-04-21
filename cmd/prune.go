@@ -25,16 +25,14 @@ func init() {
 func runPrune(cmd *cobra.Command, args []string) {
 	dur, err := parseDuration(pruneOlderThan)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: invalid duration %q: %s\n", pruneOlderThan, err)
-		os.Exit(1)
+		exitError("invalid duration %q: %s", pruneOlderThan, err)
 	}
 
 	cutoff := time.Now().Add(-dur)
 
 	archives, err := archive.LoadAll()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+		exitError("%s", err)
 	}
 
 	pruned := 0

@@ -1,6 +1,7 @@
 package archive
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -20,5 +21,15 @@ func TestMakeIDSpecialChars(t *testing.T) {
 	want := "my-feature/test--2026-01-01T00-00-00"
 	if id != want {
 		t.Errorf("MakeID = %q, want %q", id, want)
+	}
+}
+
+// Invariant: IDs are embedded in git refs (refs/grove-archive/<ID>/<repo>)
+// and appear as ls-able strings in CLI output. Colons would break both.
+func TestMakeID_NoColons(t *testing.T) {
+	ts := time.Date(2026, 4, 21, 14, 30, 45, 0, time.UTC)
+	id := MakeID("ws", ts)
+	if strings.Contains(id, ":") {
+		t.Errorf("MakeID must not contain colons (unsafe for git refs): %q", id)
 	}
 }

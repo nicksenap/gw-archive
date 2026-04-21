@@ -24,12 +24,10 @@ func runSave(cmd *cobra.Command, args []string) {
 
 	ws, err := grove.FindWorkspace(wsName)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: reading state: %s\n", err)
-		os.Exit(1)
+		exitError("reading state: %s", err)
 	}
 	if ws == nil {
-		fmt.Fprintf(os.Stderr, "error: workspace %q not found in state\n", wsName)
-		os.Exit(1)
+		exitError("workspace %q not found in state", wsName)
 	}
 
 	now := time.Now()
@@ -70,8 +68,7 @@ func runSave(cmd *cobra.Command, args []string) {
 	}
 
 	if err := archive.Append(a); err != nil {
-		fmt.Fprintf(os.Stderr, "error: saving archive: %s\n", err)
-		os.Exit(1)
+		exitError("saving archive: %s", err)
 	}
 
 	fmt.Printf("Archived %s (%d repos, %d with changes)\n", wsName, len(a.Repos), changedCount)

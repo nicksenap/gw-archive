@@ -202,6 +202,33 @@ func TestApplyStash(t *testing.T) {
 	}
 }
 
+func TestCommitExists(t *testing.T) {
+	repo := initTestRepo(t)
+
+	// Capture the commit SHA of HEAD
+	head := run(t, repo, "git", "rev-parse", "HEAD")
+
+	if !CommitExists(repo, head) {
+		t.Errorf("CommitExists should be true for HEAD %q", head)
+	}
+
+	// A plausibly-formatted SHA that doesn't exist
+	fakeSha := "0000000000000000000000000000000000000000"
+	if CommitExists(repo, fakeSha) {
+		t.Errorf("CommitExists should be false for nonexistent SHA %q", fakeSha)
+	}
+
+	// Empty string must be false — don't issue a probe on empty input
+	if CommitExists(repo, "") {
+		t.Error("CommitExists(\"\") should be false")
+	}
+
+	// Nonexistent repo path — git will fail, should return false
+	if CommitExists(filepath.Join(t.TempDir(), "no-such-repo"), head) {
+		t.Error("CommitExists should be false when repo path is invalid")
+	}
+}
+
 func TestFullRoundTrip(t *testing.T) {
 	repo := initTestRepo(t)
 
